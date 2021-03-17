@@ -31,6 +31,9 @@ const SiteNav = (props) => {
             <NavItem>
               <NavLink href="/api/auth/signin/">signin</NavLink>  
             </NavItem>
+            <NavItem>
+              <NavLink href="/api/auth/signout/">signout</NavLink>  
+            </NavItem>
             
             
           </Nav>
