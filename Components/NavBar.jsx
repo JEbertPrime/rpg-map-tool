@@ -13,12 +13,9 @@ import {
   DropdownItem,
   NavbarText
 } from 'reactstrap';
-import { signIn, signOut, useSession } from 'next-auth/client'
 
 const SiteNav = (props) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [ session, loading ] = useSession()
-  if(session){console.log(session)}
   const toggle = () => setIsOpen(!isOpen);
 
   return (

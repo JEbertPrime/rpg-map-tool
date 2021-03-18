@@ -32,7 +32,9 @@ export default NextAuth({
   callbacks: {
     // async signIn(user, account, profile) { return true },
      
-    // async session(session, user) { return session },
+     async session(session, user) { 
+      session.user.id = user.id
+      return session },
     // async jwt(token, user, account, profile, isNewUser) { return token }
   },
   database: process.env.DATABASE_URL,

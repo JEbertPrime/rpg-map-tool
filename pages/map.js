@@ -3,13 +3,15 @@ import styles from '../styles/Home.module.css'
 import SvgBox from '../Components/SvgBox.jsx' 
 import {Input, Label, Col, Container, Row, TabContent, TabPane, Button, Nav, NavItem, NavLink} from 'reactstrap'
 import classnames from 'classnames';
+import {  useSession } from 'next-auth/client'
 
 import { useState } from 'react'
-export default function Home() {
+export default function Map() {
   var [radius, changeRadius] = useState(10)
   var [mapFile, changeMap] = useState({})
   var [mapURL, changeMapURL] = useState('')
-  const [activeTab, setActiveTab] = useState('1');
+  var [session, loading] = useSession()
+    const [activeTab, setActiveTab] = useState('1');
     const toggle = tab => {
       if(activeTab !== tab) setActiveTab(tab);
     }
@@ -17,8 +19,6 @@ export default function Home() {
     
     changeMap(e.target.files[0])
     changeMapURL(window.URL.createObjectURL(e.target.files[0]))
-    console.log(mapFile)
-    console.log(mapFile instanceof Blob)
 
     
   }
@@ -34,10 +34,30 @@ export default function Home() {
       body: data
     }).then(response => response.json())
     .then(obj =>{
+      let data = JSON.stringify({
+        user: session.id,
+        title: 'poop',
+        fileName: obj.path
+      })
+      fetch('api/maps/upload',{
+        method:'POST',
+        body:data
+      });
       var href = obj.path.replace('public', '')
        changeMapURL(href.replaceAll('\\', '/'))
       })
       
+  }
+  const getMyMaps = () =>{
+    console.log(session)
+    const data = JSON.stringify({
+      user: session.user.id
+    })
+    const maps = fetch('api/maps/all/user', {
+      method:'POST',
+      body: data
+    }).then(data => data.json())
+    console.log(maps)
   }
   return (
     <Container >
@@ -63,7 +83,9 @@ export default function Home() {
               <Input type='file' onChange={handleFile}/>
               <Button onClick={submitFile}>Submit</Button>
               </TabPane>
-              <TabPane tabId='2'></TabPane>
+              <TabPane tabId='2'>
+                <Button onClick={getMyMaps}>d</Button>
+              </TabPane>
             </TabContent>
           
         </Col>

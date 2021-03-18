@@ -13,7 +13,6 @@ export default async (req, res) => {
   form.uploadDir = "./public/maps/";
   form.keepExtensions = true;
   form.parse(req, (err, fields, files) => {
-    console.log(err, fields, files);
     if(err){
         res.send({status: 400, error: err})
     }

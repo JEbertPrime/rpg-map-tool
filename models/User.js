@@ -10,7 +10,7 @@ export default class User extends Adapters.TypeORM.Models.User.model {
 }
 
 export const UserSchema = {
-  name: "User",
+  name: "",
   target: User,
   columns: {
     ...Adapters.TypeORM.Models.User.schema.columns,
@@ -18,6 +18,6 @@ export const UserSchema = {
     mapsId: {
       objectId:true,
       generated: true,
-    },
+        },
   },
 }

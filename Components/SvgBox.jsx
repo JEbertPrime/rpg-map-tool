@@ -43,10 +43,12 @@ export default function svgBox (props){
         changeHeight(imageHeight)
     }
     return(
-        <svg id='map-svg' width={w} height={h}>
+        <svg id='map-svg' width='100%'  viewBox={`0 0 ${w} ${h}`}>
         <g id='zoom'>
-            <image href={props.url} width={w}  preserveAspectRatio='true' onLoad={resizeToImage}/>
-            {bin.map((hex)=> <Hex center={{x:hex.x, y: hex.y}} radius={props.radius} id={`hex_${Math.trunc(hex.x)}_${Math.trunc(hex.y)}`} /> )}
+            <image href={props.url} width='100%'  preserveAspectRatio='true' onLoad={resizeToImage}/>
+            <g>
+            {bin.map((hex)=> <Hex center={{x:hex.x, y: hex.y}} radius={props.radius} id={`hex_${Math.trunc(hex.x)}_${Math.trunc(hex.y)}`} /> )} 
+            </g>
         </g>
             
 
