@@ -7,18 +7,23 @@ const handler = async (req, res) => {
     
 
     if(session){
-        if (req.method === 'POST') {
+        if (req.method === 'DELETE') {
             // Check if name, email or password is provided
-            const { mapId } = JSON.parse(req.body);
+            const { mapId, user } = JSON.parse(req.body);
+            console.log(user)
             if(user == session.user.id){
             if (user) {
                 try {
                 
                 //Find single map by id
-                Map.deleteOne({_id: mapId}, function (err){
+                Map.deleteOne({_id:mapId}, function (err){
+                    if(err){
                     res.status(500).send(err.message)
+                    }else{
+                        return res.status(200).send('deleted');
+
+                    }
                 })
-                return res.status(200).send('deleted');
                 } catch (error) {
                 return res.status(500).send(error.message);
                 }

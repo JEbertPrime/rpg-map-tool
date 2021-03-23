@@ -17,6 +17,7 @@
     "d3-drag": "^2.0.0",
     "d3-hexbin": "^0.2.2",
     "d3-hexgrid": "^0.3.0",
+    "d3-selection": "^2.0.0",
     "d3-zoom": "^2.0.0",
     "formidable": "^1.2.2",
     "mongodb": "^3.6.5",
