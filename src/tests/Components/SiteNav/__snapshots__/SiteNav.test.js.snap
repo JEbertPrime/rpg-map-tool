@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Nav renders correctly 1`] = `
+<div>
+  <nav
+    className="navbar navbar-expand-md navbar-light bg-white"
+    id="main_nav"
+  >
+    <a
+      className="navbar-brand"
+      href="/"
+      onClick={[Function]}
+      onMouseEnter={[Function]}
+    >
+      campaignMaps
+    </a>
+    <button
+      aria-label="Toggle navigation"
+      className="navbar-toggler"
+      onClick={[Function]}
+      type="button"
+    >
+      <span
+        className="navbar-toggler-icon"
+      />
+    </button>
+    <div
+      className="collapse navbar-collapse"
+      style={Object {}}
+    >
+      <ul
+        className="me-auto navbar-nav"
+      >
+        <li
+          className="nav-item"
+        >
+          <a
+            className="nav-link"
+            href="/api/auth/signout/"
+            onClick={[Function]}
+            onMouseEnter={[Function]}
+          >
+            signout
+          </a>
+        </li>
+        <li
+          className="nav-item"
+        >
+          <a
+            className="nav-link"
+            href="/map/"
+            onClick={[Function]}
+            onMouseEnter={[Function]}
+          >
+            map
+          </a>
+        </li>
+      </ul>
+    </div>
+    <a
+      className="nav-link"
+      href="/api/auth/signin/"
+      onClick={[Function]}
+      onMouseEnter={[Function]}
+    >
+      login
+    </a>
+  </nav>
+</div>
+`;

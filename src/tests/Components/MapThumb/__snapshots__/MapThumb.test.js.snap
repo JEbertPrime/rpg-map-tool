@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MapThumb renders correctly 1`] = `
+<div
+  className="MapThumb__Wrapper-sc-4r9j8g-2 hpzgfY"
+>
+  <h3
+    className="MapThumb__MapTitle-sc-4r9j8g-3 fHyouP"
+  >
+    test_thumb
+  </h3>
+  <div
+    className="MapThumb__Parent-sc-4r9j8g-1 bUNUyg"
+    style={
+      Object {
+        "backgroundImage": "url(maps/example_1.jpg)",
+        "backgroundSize": "cover",
+        "height": "undefinedpx",
+        "width": "undefinedpx",
+      }
+    }
+  >
+    <div
+      className="MapThumb__Child-sc-4r9j8g-0 dOGsgr"
+    />
+  </div>
+</div>
+`;
