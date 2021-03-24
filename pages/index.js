@@ -1,11 +1,13 @@
 import Head from "next/head";
-import styles from "../styles/Home.module.css";
+import { useContext, useEffect, useState } from "react";
+
 import SvgBox from "../Components/SvgBox.jsx";
 import styled from 'styled-components'
 
 
 import { Input, Label, Col, Container , Row } from "reactstrap";
 import MapShowcase from '../Components/MapShowcase.jsx'
+import { SessionContext } from "../Components/Layout";
 const StyledCol = styled(Col)`
   background-color: white;
   border-radius: 15px;
@@ -23,9 +25,10 @@ const Background = styled.div`
   width: 100vw
 
 `
-const devMaps = [{title: 'Example 1', fileName: 'maps/example_1.jpg', id:1}, {title: 'Example 2', fileName: 'maps/example_2.jpg', id:2}]
-import { useContext, useEffect, useState } from "react";
-import { SessionContext } from "../Components/Layout";
+const devMaps = [{title: 'Example 1', fileName: 'maps/example_1.jpg', _id:1}, {title: 'Example 2', fileName: 'maps/example_2.jpg', _id:2}]
+
+
+
 export default function Home() {
   const session = useContext(SessionContext)
   const [userMaps, changeUserMaps] = useState([])
@@ -48,7 +51,7 @@ export default function Home() {
     getMyMaps()
   }, [session])
   return (
-    <div>
+    <main >
     <Background/>
   <StyledContainer fluid>
     <Row>
@@ -64,7 +67,7 @@ export default function Home() {
       <Col md={2} lg={3} />
     </Row>
   </StyledContainer>
-  </div>
+  </main>
   )
   ;
 }

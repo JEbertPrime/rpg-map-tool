@@ -1,6 +1,7 @@
 // Backend
 import formidable from "formidable";
-
+import sanitize from 'sanitize-filename'
+import unique from 'unique-filename'
 export const config = {
   api: {
     bodyParser: false,
@@ -11,6 +12,9 @@ export default async (req, res) => {
   try {
     const form = new formidable.IncomingForm();
     form.uploadDir = "./public/maps/";
+    form.on('fileBegin', (name, file)=>{
+      file.path = unique(form.uploadDir, sanitize(file.name))
+    })
     form.keepExtensions = true;
     form.parse(req, (err, fields, files) => {
       if (err) {

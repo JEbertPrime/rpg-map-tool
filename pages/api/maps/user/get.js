@@ -1,14 +1,15 @@
 import connectDB from "../../../../middleware/mongodb.js";
 import Map from "../../../../models/map.js";
 import { getSession } from "next-auth/client";
-
+import sanitize from 'mongo-sanitize'
 const handler = async (req, res) => {
   const session = await getSession({ req });
 
   if (session) {
     if (req.method === "POST") {
       // Check if name, email or password is provided
-      const { mapId, user } = JSON.parse(req.body);
+      const clean = sanitize( JSON.parse(req.body))
+      const { mapId, user } = clean;
       if (user == session.user.id) {
         if (user && mapId) {
           try {
