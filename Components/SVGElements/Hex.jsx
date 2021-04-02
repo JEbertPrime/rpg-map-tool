@@ -1,15 +1,20 @@
 import styled from "styled-components";
 const Polygon = styled.polygon`
-  fill-opacity: 0;
-  stroke-width: 0.5;
+  fill-opacity: ${props => props.color ? .5 : 0 };
+  stroke-width: ${props => props.selected ? 1.5 : .5};
   stroke: black;
   stroke-opacity: 0.5;
   &:hover {
     fill-opacity: 0.5;
+    stroke-width: 1
   }
+  fill: ${props => props.color ? props.color : 'grey' }
 `;
 export default function Hex(props) {
   const { radius, center, ...otherProps } = props;
+  if(props.hexData){
+    var {color} = props.hexData
+  }
   const calculatePoints = (r, c) => {
     function toRadians(angle) {
       return angle * (Math.PI / 180);
@@ -24,5 +29,5 @@ export default function Hex(props) {
     return points;
   };
 
-  return <Polygon points={calculatePoints(radius, center)} {...otherProps} />;
+  return <Polygon color={color} points={calculatePoints(radius, center)} {...otherProps} />;
 }

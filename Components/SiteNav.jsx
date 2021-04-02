@@ -15,7 +15,7 @@ import {
   DropdownItem,
   NavbarText,
 } from "reactstrap";
-import { SessionContext } from "./Layout.jsx";
+import { SessionContext } from "../contexts/contexts.js";
 //this is used to avoid a bug with Next/Link. Delete and use default when issue
 export function LinkWrap({ children, refAs, ...props }, ref) {
   if (refAs) {
@@ -43,8 +43,8 @@ function Link({ refAs, children, ...props }) {
 const SiteNav = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
-  const session = props.session ? props.session : useContext(SessionContext);
-  var userIcon =  session ? session.user.image ? <img src={session.user.image} height="32px" /> : <h4>{session.user.name}</h4> : (<Link href="/api/auth/signin/">
+  const [session, error] = props.session ? props.session : useContext(SessionContext);
+  var userIcon =  session ? session.user.image ? <img src={session.user.image} height="32px"  /> : <h4>{session.user.name}</h4> : (<Link href="/api/auth/signin/">
   <NavLink href="/api/auth/signin/">login</NavLink>
 </Link>)
   if (session) {
@@ -57,7 +57,7 @@ const SiteNav = (props) => {
 
   return (
     <div>
-      <Navbar color="white" light expand="md" id='main_nav'>
+      <Navbar color="white" light expand="md" id='main_nav' style={{borderBottom: '1px solid lightgrey', marginBottom: '5px'}}>
         <Link href="/">
           <NavbarBrand href="/">campaignMaps</NavbarBrand>
         </Link>
