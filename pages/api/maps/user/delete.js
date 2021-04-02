@@ -1,5 +1,5 @@
 import connectDB from '../../../../middleware/mongodb.js';
-import Map from '../../../../models/map.js';
+import Map from '../../../../models/Map.js';
 import { getSession } from 'next-auth/client'
 
 const handler = async (req, res) => {
