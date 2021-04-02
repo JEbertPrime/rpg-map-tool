@@ -7,7 +7,7 @@ import styled from 'styled-components'
 
 import { Input, Label, Col, Container , Row } from "reactstrap";
 import MapShowcase from '../Components/MapShowcase.jsx'
-import { SessionContext } from "../Components/Layout";
+import { SessionContext } from "../contexts/contexts.js";
 const StyledCol = styled(Col)`
   background-color: white;
   border-radius: 15px;
@@ -29,26 +29,40 @@ const devMaps = [{title: 'Example 1', fileName: 'maps/example_1.jpg', _id:1}, {t
 
 
 
-export default function Home() {
-  const session = useContext(SessionContext)
+export default function Home(props) {
+  const [session, error] = props.session ? props.session : useContext(SessionContext)
+  console.log(session)
   const [userMaps, changeUserMaps] = useState([])
+
+
   const getMyMaps = () => {
+    var error = null, maps = []
     if (session) {
+      
       const data = JSON.stringify({
         user: session.user.id,
       });
-      const maps = fetch("api/maps/all/user", {
+       maps = fetch("api/maps/all/user", {
         method: "POST",
         body: data,
       })
         .then((data) => data.json())
         .then((mapArray) => {
-          changeUserMaps(mapArray);
+          return mapArray
+        })
+        .catch((err)=>{
+          return err
         });
+        
+        
     }
+    return maps
   };
-  useEffect(()=>{
-    getMyMaps()
+  useEffect(async ()=>{
+    var maps = await getMyMaps()
+    if(error){console.error(error)}
+    changeUserMaps(maps)
+    
   }, [session])
   return (
     <main >

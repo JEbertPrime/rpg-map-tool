@@ -1,6 +1,8 @@
 import styled from "styled-components";
-
+import styles from "../styles/Map.module.css";
 import SvgBox from "../Components/SvgBox.jsx";
+import RichTextEditor from "react-rte";
+
 import {
   Input,
   Label as unstyledLabel,
@@ -18,6 +20,7 @@ import {
 } from "reactstrap";
 import MapThumb from "../Components/MapThumb";
 import Toolbar from "../Components/Toolbar";
+import TextEditor from "../Components/TextEditor";
 import classnames from "classnames";
 import {
   useState,
@@ -25,6 +28,7 @@ import {
   useEffect,
   useReducer,
   createContext,
+  memo,
 } from "react";
 import { SessionContext, HexContext } from "../contexts/contexts.js";
 import { dispatch } from "d3-dispatch";
@@ -68,11 +72,11 @@ const hexInitialState = { hexes: [] };
 function hexReducer(state, action) {
   switch (action.type) {
     case "ADD_HEX":
-      var hexArray = [...state.hexes];
+      var hexArray = state.hexes;
       hexArray[action.payload.index] = action.payload.hex;
       return { hexes: hexArray };
     case "CHANGE_HEX":
-      var hexArray = [...state.hexes];
+      var hexArray = state.hexes;
       var index = action.payload.index;
       hexArray[index] = action.payload.hex;
       return { hexes: hexArray };
@@ -82,8 +86,14 @@ function hexReducer(state, action) {
       selectedHex.color = action.payload.color;
       hexArray[action.payload.index] = selectedHex;
       return { hexes: hexArray };
-      case "RESET":
-        return {hexes: action.payload.hexes}
+    case "CHANGE_HEX_TEXT":
+      var hexArray = [...state.hexes];
+      var selectedHex = { ...hexArray[action.payload.index] };
+      selectedHex.text = action.payload.text;
+      hexArray[action.payload.index] = selectedHex;
+      return { hexes: hexArray };
+    case "RESET":
+      return { hexes: action.payload.hexes };
     default:
       throw new Error();
   }
@@ -96,12 +106,22 @@ export default function Map() {
   var [userMaps, changeUserMaps] = useState([]);
   var [mapTitle, changeMapTitle] = useState("");
   var [session] = useContext(SessionContext);
-  const [activeTab, setActiveTab] = useState("1");
+  var [activeTab, setActiveTab] = useState("1");
   var [selectedTool, changeTool] = useState("0");
   var [cursor, changeCursor] = useState(null);
   var [color, changeColor] = useState("#fff");
   var [selectedHexes, selectHex] = useState([]);
+  var [selectType, changeSelectType] = useState("single");
   var [mouseDown, changeMouseDown] = useState(false);
+  var [editorDisplay, toggleEditor] = useState("none");
+  var [editorHex, changeEditorHex] = useState(0)
+  var [text, changeTextState] = useState(RichTextEditor.createEmptyValue());
+
+  const changeText = (text, index) =>{
+    hexDispatch({type:'CHANGE_HEX_TEXT', payload:{index: index, text:text}})
+    changeTextState(text)
+  }
+
   var [hexState, hexDispatch] = useReducer(hexReducer, hexInitialState);
   const toggle = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
@@ -191,7 +211,7 @@ export default function Map() {
   };
   const displayMap = (id) => {
     const currentMap = userMaps.filter((userMap) => userMap._id === id)[0];
-    hexDispatch({type: 'RESET', payload: {hexes: []}})
+    hexDispatch({ type: "RESET", payload: { hexes: [] } });
     changeMapURL(currentMap.fileName);
     changeRadius(currentMap.hexRadius);
   };
@@ -201,10 +221,14 @@ export default function Map() {
     } else if (event.type == "mouseup") {
       changeMouseDown(false);
     }
-
+    if(selectedTool !== 3){
+      toggleEditor('none')
+    }
     switch (selectedTool) {
       case 0:
         if (event.type == "click") {
+          changeSelectType("single");
+
           if (event.getModifierState("Shift")) {
             var selectCopy = [...selectedHexes];
             selectCopy.push(index);
@@ -233,14 +257,20 @@ export default function Map() {
         break;
       case 1:
         //select by color
-        if( event.type === 'click' && hexState.hexes[index] && hexState.hexes[index].color){
-          var hexes = [...hexState.hexes]
-          var selectColor = hexes[index].color
-          var selectedByColor = hexes.map((hex, i) => hex ? hex.color === selectColor ? i : undefined : undefined)
-          
-          selectHex(selectedByColor )
+        if (
+          event.type === "click" &&
+          hexState.hexes[index] &&
+          hexState.hexes[index].color
+        ) {
+          var hexes = hexState.hexes;
+          var selectColor = hexes[index].color;
+          var selectedByColor = hexes.map((hex, i) =>
+            hex ? (hex.color === selectColor ? i : undefined) : undefined
+          );
+          changeSelectType("color");
+          selectHex(selectedByColor);
         }
-        
+
         break;
       case 2:
         if (mouseDown || event.type == "click") {
@@ -267,15 +297,20 @@ export default function Map() {
             }
           }
         }
+        break;
+      case 3:
+        if (event.type == "click") {
+          toggleEditor("block");
+          changeEditorHex(index)
+          hexState.hexes[index]? hexState.hexes[index].text ? changeText(hexState.hexes[index].text) : changeText(RichTextEditor.createEmptyValue()) : changeText(RichTextEditor.createEmptyValue())
+        }
     }
   };
   useEffect(async () => {
     var maps = await getMyMaps();
     changeUserMaps(maps);
   }, [session, userMaps.length]);
-  useEffect(()=>{
-
-  }, [mapURL])
+  useEffect(() => {}, [mapURL]);
   return (
     <Container fluid>
       <Row noGutters>
@@ -384,9 +419,14 @@ export default function Map() {
           </Row>
         </Col>
         <Col>
+          <div style={{ display: editorDisplay }}>
+            
+            <TextEditor initial text={text} onChange={changeText} editing={editorHex} />
+          </div>
           <SvgWrap cursor={cursor}>
             <HexContext.Provider value={hexDispatch}>
               <SvgBox
+                selectType={selectType}
                 hexes={hexState.hexes}
                 radius={radius}
                 width={700}

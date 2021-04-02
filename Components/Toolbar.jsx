@@ -73,14 +73,15 @@ export default function Toolbar(props) {
         />
       ))}
       <ColorSwatch color={color} open={open} onClick={toggleOpen} >
-      
-      </ColorSwatch>
       <ColorPickerWrap>
       <RightWrap>
-        <CompactPicker style={{right: '100%'}}  color={color} onChangeComplete={(color)=>{changeColor(color.hex)
+        <CompactPicker style={{right: '100%'}}  color={color} onChangeComplete={(color)=>{
+          changeColor(color.hex)
       toggleOpen()}}/>
       </RightWrap>
       </ColorPickerWrap>
+      </ColorSwatch>
+      
       
     </IconStyleWrapper>
   );

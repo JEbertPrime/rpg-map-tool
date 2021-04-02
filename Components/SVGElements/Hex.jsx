@@ -1,7 +1,7 @@
 import styled from "styled-components";
 const Polygon = styled.polygon`
   fill-opacity: ${props => props.color ? .5 : 0 };
-  stroke-width: ${props => props.selected ? 1.5 : .5};
+  stroke-width: ${props => props.selected ? props.byColor ? 0 : 1.5 : .5};
   stroke: black;
   stroke-opacity: 0.5;
   &:hover {
@@ -25,7 +25,6 @@ export default function Hex(props) {
       c.y + r * Math.sin(toRadians(angle)),
     ]);
     var strings = points.map((point) => point.toString());
-    var string = strings.toString();
     return points;
   };
 

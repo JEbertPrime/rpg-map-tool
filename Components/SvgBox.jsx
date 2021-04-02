@@ -11,7 +11,7 @@ export default function svgBox(props) {
   var w = parseInt(props.width);
   var [h, changeHeight] = useState((w * 2) / 3);
   var r =  props.radius < 10 ? 10 : props.radius > 40 ? 40 : props.radius
-  
+  var hexes = [...props.hexes]
     
   var [zoomG, changeZoomG] = useState({})
   var [zoomBehavior, changeZoom] = useState()
@@ -93,7 +93,8 @@ export default function svgBox(props) {
               center={{ x: hex.x, y: hex.y }}
               radius={r}
               selected={props.selectedHexes.includes(index)}
-              hexData={props.hexes[index] ? props.hexes[index] : false}
+              byColor={props.selectType === 'color'}
+              hexData={hexes[index] ? hexes[index] : false}
               key={`hex_${Math.trunc(hex.x)}_${Math.trunc(hex.y)}`}
               onClick={(e)=>{
                 props.onHexEvent(e, index)
