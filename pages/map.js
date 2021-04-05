@@ -1,7 +1,6 @@
 import styled from "styled-components";
 import styles from "../styles/Map.module.css";
 import SvgBox from "../Components/SvgBox.jsx";
-import RichTextEditor from "react-rte";
 
 import {
   Input,
@@ -115,7 +114,7 @@ export default function Map() {
   var [mouseDown, changeMouseDown] = useState(false);
   var [editorDisplay, toggleEditor] = useState("none");
   var [editorHex, changeEditorHex] = useState(0)
-  var [text, changeTextState] = useState(RichTextEditor.createEmptyValue());
+  var [text, changeTextState] = useState('');
 
   const changeText = (text, index) =>{
     hexDispatch({type:'CHANGE_HEX_TEXT', payload:{index: index, text:text}})
@@ -302,7 +301,7 @@ export default function Map() {
         if (event.type == "click") {
           toggleEditor("block");
           changeEditorHex(index)
-          hexState.hexes[index]? hexState.hexes[index].text ? changeText(hexState.hexes[index].text) : changeText(RichTextEditor.createEmptyValue()) : changeText(RichTextEditor.createEmptyValue())
+          hexState.hexes[index]? hexState.hexes[index].text ? changeText(hexState.hexes[index].text) : changeText('') : changeText('')
         }
     }
   };
