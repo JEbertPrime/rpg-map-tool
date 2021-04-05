@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MapShowcase renders correctly 1`] = `
+<div>
+  <h1>
+    test
+  </h1>
+  <div
+    className="MapShowcase__Wrapper-bbss5s-0 bSIsoI"
+  >
+    <div
+      className="MapThumb__Wrapper-sc-4r9j8g-2 hpzgfY"
+    >
+      <h3
+        className="MapThumb__MapTitle-sc-4r9j8g-3 fHyouP"
+      >
+        test_thumb
+      </h3>
+      <div
+        className="MapThumb__Parent-sc-4r9j8g-1 bUNUyg"
+        id={1}
+        style={
+          Object {
+            "backgroundImage": "url(maps/example_1.jpg)",
+            "backgroundSize": "cover",
+            "height": "200px",
+            "width": "200px",
+          }
+        }
+      >
+        <div
+          className="MapThumb__Child-sc-4r9j8g-0 dOGsgr"
+        />
+      </div>
+    </div>
+    <div
+      className="MapThumb__Wrapper-sc-4r9j8g-2 hpzgfY"
+    >
+      <h3
+        className="MapThumb__MapTitle-sc-4r9j8g-3 fHyouP"
+      >
+        test_thumb
+      </h3>
+      <div
+        className="MapThumb__Parent-sc-4r9j8g-1 bUNUyg"
+        id={2}
+        style={
+          Object {
+            "backgroundImage": "url(maps/example_2.jpg)",
+            "backgroundSize": "cover",
+            "height": "200px",
+            "width": "200px",
+          }
+        }
+      >
+        <div
+          className="MapThumb__Child-sc-4r9j8g-0 dOGsgr"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
