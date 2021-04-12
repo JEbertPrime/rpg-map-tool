@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import styles from "../../styles/Map.module.css";
 import SvgBox from "../../Components/SvgBox.jsx";
-import HexMap from "./HexMap";
+import HexMap from "../../Classes/HexMap";
 import { Editor, EditorState, convertFromRaw } from "draft-js";
 import {
   Input,
