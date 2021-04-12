@@ -1,7 +1,8 @@
 import styled from "styled-components";
-import styles from "../styles/Map.module.css";
-import SvgBox from "../Components/SvgBox.jsx";
-
+import styles from "../../styles/Map.module.css";
+import SvgBox from "../../Components/SvgBox.jsx";
+import HexMap from "./HexMap";
+import { Editor, EditorState, convertFromRaw } from "draft-js";
 import {
   Input,
   Label as unstyledLabel,
@@ -17,9 +18,9 @@ import {
   NavItem,
   NavLink,
 } from "reactstrap";
-import MapThumb from "../Components/MapThumb";
-import Toolbar from "../Components/Toolbar";
-import TextEditor from "../Components/TextEditor";
+import MapThumb from "../../Components/MapThumb";
+import Toolbar from "../../Components/Toolbar";
+import TextEditor from "../../Components/TextEditor";
 import classnames from "classnames";
 import {
   useState,
@@ -29,7 +30,7 @@ import {
   createContext,
   memo,
 } from "react";
-import { SessionContext, HexContext } from "../contexts/contexts.js";
+import { SessionContext, HexContext } from "../../contexts/contexts.js";
 import { dispatch } from "d3-dispatch";
 
 ////////////////STYLED COMPONENTS ///////////////////////////////
@@ -66,62 +67,35 @@ const SvgWrap = styled.div`
       : "default"};
 `;
 
-////////////////////////////////////REDUCERS/STATE VALUES/////////////////////////////////
-const hexInitialState = { hexes: [] };
-function hexReducer(state, action) {
-  switch (action.type) {
-    case "ADD_HEX":
-      var hexArray = state.hexes;
-      hexArray[action.payload.index] = action.payload.hex;
-      return { hexes: hexArray };
-    case "CHANGE_HEX":
-      var hexArray = state.hexes;
-      var index = action.payload.index;
-      hexArray[index] = action.payload.hex;
-      return { hexes: hexArray };
-    case "CHANGE_HEX_COLOR":
-      var hexArray = [...state.hexes];
-      var selectedHex = { ...hexArray[action.payload.index] };
-      selectedHex.color = action.payload.color;
-      hexArray[action.payload.index] = selectedHex;
-      return { hexes: hexArray };
-    case "CHANGE_HEX_TEXT":
-      var hexArray = [...state.hexes];
-      var selectedHex = { ...hexArray[action.payload.index] };
-      selectedHex.text = action.payload.text;
-      hexArray[action.payload.index] = selectedHex;
-      return { hexes: hexArray };
-    case "RESET":
-      return { hexes: action.payload.hexes };
-    default:
-      throw new Error();
-  }
-}
 ///////////////////////////////////CONTEXTS/////////////////////////////////////////////
 export default function Map() {
-  var [radius, changeRadius] = useState(10);
+  /////////////////////MAP STATE //////////////////////
   var [mapFile, changeMap] = useState({});
   var [mapURL, changeMapURL] = useState("");
   var [userMaps, changeUserMaps] = useState([]);
   var [mapTitle, changeMapTitle] = useState("");
+  var [radius, changeRadius] = useState(10);
+  var [terrains, changeTerrains] = useState();
+  var [colorLayer, changeColorLayer] = useState();
+  var [texts, changeTexts] = useState();
+  var [currentMap, changeCurrentMap] = useState();
   var [session] = useContext(SessionContext);
+
+  //////////////////////////UI STATE///////////////////
   var [activeTab, setActiveTab] = useState("1");
   var [selectedTool, changeTool] = useState("0");
   var [cursor, changeCursor] = useState(null);
   var [color, changeColor] = useState("#fff");
+  var [selectedColor, setSelectColor] = useState(false)
   var [selectedHexes, selectHex] = useState([]);
   var [selectType, changeSelectType] = useState("single");
   var [mouseDown, changeMouseDown] = useState(false);
   var [editorDisplay, toggleEditor] = useState("none");
-  var [editorHex, changeEditorHex] = useState(0)
-  var [text, changeTextState] = useState('');
-
-  const changeText = (text, index) =>{
-    hexDispatch({type:'CHANGE_HEX_TEXT', payload:{index: index, text:text}})
-    changeTextState(text)
-  }
-
-  var [hexState, hexDispatch] = useReducer(hexReducer, hexInitialState);
+  var [editorKey, changeEditorKey] = useState();
+  var [text, changeTextState] = useState(EditorState.createEmpty());
+  var [selectedTerrain, selectTerrain] = useState("desert");
+var [change, stateChange] = useState(false)
+  
   const toggle = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
   };
@@ -175,7 +149,6 @@ export default function Map() {
   };
   const getMyMaps = () => {
     var maps = [];
-    console.log(session);
     if (session) {
       const data = JSON.stringify({
         user: session.user.id,
@@ -188,43 +161,44 @@ export default function Map() {
         .then((mapArray) => {
           return mapArray;
         });
+      console.log(maps);
       return maps;
     }
     return maps;
   };
-  const deleteThisMap = (id) => {
-    const data = JSON.stringify({
-      mapId: id,
-      user: session.user.id,
-    });
-    fetch("api/maps/user/delete", {
-      method: "DELETE",
-      body: data,
-    })
-      .then((response) => response.status)
-      .then((status) => {
-        if (status === 200) {
-          getMyMaps();
-        }
-      });
+  const deleteThisMap = (map) => {
+    map.delete();
+  };
+  const updateMap = (map) => {
+    try{map.update()}catch(err){console.log(err)}
   };
   const displayMap = (id) => {
-    const currentMap = userMaps.filter((userMap) => userMap._id === id)[0];
-    hexDispatch({ type: "RESET", payload: { hexes: [] } });
-    changeMapURL(currentMap.fileName);
-    changeRadius(currentMap.hexRadius);
+    var selectedMap = userMaps.find((userMap) => userMap._id === id)
+    changeCurrentMap(selectedMap, console.log(currentMap));
+    changeTerrains(selectedMap.terrains);
+    changeColorLayer(selectedMap.colors, ()=>console.log(colorLayer));
+    changeMapURL(selectedMap.file);
+    changeRadius(selectedMap.radius);
   };
+  const changeText = (text, key) => {
+    if (currentMap) {
+      currentMap.changeText(text, key)
+      changeTextState(currentMap.getTextByKey(key))
+
+    }
+  };
+  
   const handleHexEvent = (event, index) => {
     if (event.type == "mousedown") {
       changeMouseDown(true);
     } else if (event.type == "mouseup") {
       changeMouseDown(false);
     }
-    if(selectedTool !== 3){
-      toggleEditor('none')
+    if (selectedTool !== "text") {
+      toggleEditor("none");
     }
     switch (selectedTool) {
-      case 0:
+      case "selectOne":
         if (event.type == "click") {
           changeSelectType("single");
 
@@ -254,62 +228,117 @@ export default function Map() {
           selectHex(selectCopy);
         }
         break;
-      case 1:
+      case "selectColor":
         //select by color
-        if (
-          event.type === "click" &&
-          hexState.hexes[index] &&
-          hexState.hexes[index].color
-        ) {
-          var hexes = hexState.hexes;
-          var selectColor = hexes[index].color;
-          var selectedByColor = hexes.map((hex, i) =>
-            hex ? (hex.color === selectColor ? i : undefined) : undefined
-          );
-          changeSelectType("color");
-          selectHex(selectedByColor);
+        if (event.type === "click") {
+          var indices = []
+          var selectColor = colorLayer.getColorByIndex(index)
+          if(selectColor){
+
+             indices = colorLayer.getColorLayer(selectColor).indices
+             setSelectColor(selectColor)
+             changeColorLayer(colorLayer.getColorLayer(selectColor))
+             changeSelectType('color')
+          }else if(colorLayer.parent){
+            indices = colorLayer.parent.indices
+            
+            changeColorLayer(colorLayer.parent)
+            
+            changeSelectType('color')
+            if(!colorLayer.parent.parent){
+              changeSelectType('single', console.log(selectType))
+
+            }
+            setSelectColor(false)
+
+          }else{
+            indices = [...colorLayer.childIndices]
+            changeSelectType('single')
+          }
+
+          selectHex(indices);
         }
 
         break;
-      case 2:
+      case "brush":
         if (mouseDown || event.type == "click") {
           if (
             (selectedHexes.length && selectedHexes.includes(index)) ||
             !selectedHexes.length
           ) {
-            if (hexState.hexes[index]) {
-              if (hexState.hexes[index].color !== color) {
-                hexDispatch({
-                  type: "CHANGE_HEX_COLOR",
-                  payload: { index: index, color: color },
-                });
-              }
+            if (
+              colorLayer.getColorByIndex(index) != color &&
+              colorLayer.getColorByIndex(index)
+            ) {
+              colorLayer.changeChildColor(index, color);
+              stateChange(!change)
+            }
+            if (colorLayer.getColorLayer(color)) {
+              colorLayer.getColorLayer(color).addIndex(index);
+              stateChange(!change)
+
             } else {
-              hexDispatch({
-                type: "ADD_HEX",
-                payload: { index: index, hex: {} },
-              });
-              hexDispatch({
-                type: "CHANGE_HEX_COLOR",
-                payload: { index: index, color: color },
-              });
+              colorLayer.addColor(color).addIndex(index);
+              stateChange(!change)
+
             }
           }
         }
         break;
-      case 3:
+        case 'erase':
+          if (mouseDown || event.type == "click") {
+            if (
+              (selectedHexes.length && selectedHexes.includes(index)) ||
+              !selectedHexes.length
+            ) {
+              if (
+                colorLayer.getColorByIndex(index)
+              ) {
+                colorLayer.getColorLayer(colorLayer.getColorByIndex(index)).removeIndex(index);
+              }
+             
+            }
+          }
+          break
+      case "text":
         if (event.type == "click") {
+
+         var key = event.getModifierState('Shift') ? colorLayer.getColorByIndex(index) : index ? index : 0
+          changeEditorKey(key)
           toggleEditor("block");
-          changeEditorHex(index)
-          hexState.hexes[index]? hexState.hexes[index].text ? changeText(hexState.hexes[index].text) : changeText('') : changeText('')
+          var raw = currentMap.getTextByKey(key)
+          raw ? raw.entityMap = {} : 
+          console.log(raw)
+          var content = raw ? convertFromRaw(raw) : false 
+            changeTextState(content ? EditorState.createWithContent(content) : EditorState.createEmpty())
+            changeEditorKey(key);
         }
+        break;
+      case "terrain":
+        if (mouseDown || event.type == "click") {
+          if (
+            (selectedHexes.length && selectedHexes.includes(index)) ||
+            !selectedHexes.length
+          ) {
+            if (currentMap.getTerrainByIndex(index) == selectedTerrain) {
+              break;
+            } else {
+              currentMap.changeTerrain(index, selectedTerrain);
+              changeTerrains(currentMap.terrains);
+            }
+          }
+        }
+        break;
     }
   };
   useEffect(async () => {
     var maps = await getMyMaps();
-    changeUserMaps(maps);
+    changeUserMaps(maps.map((map) => new HexMap(map)));
   }, [session, userMaps.length]);
-  useEffect(() => {}, [mapURL]);
+  useEffect(() => {
+   var interval = setInterval(()=>updateMap(currentMap), 10000)
+   return ()=>clearInterval(interval)
+  }, [currentMap]);
   return (
     <Container fluid>
       <Row noGutters>
@@ -394,16 +423,16 @@ export default function Map() {
                           width={200}
                           height={200}
                           map={userMap}
-                          id={userMap._id}
+                          id={userMap.id}
                           key={index}
                           onClick={(e) => {
                             displayMap(e.target.id);
                           }}
                         >
                           <Button
-                            id={userMap._id}
+                            id={userMap.id}
                             onClick={(e) => {
-                              deleteThisMap(e.target.id);
+                              deleteThisMap(userMap);
                             }}
                           >
                             Delete
@@ -419,28 +448,28 @@ export default function Map() {
         </Col>
         <Col>
           <div style={{ display: editorDisplay }}>
-            
-            <TextEditor initial text={text} onChange={changeText} editing={editorHex} />
+            <TextEditor text={text} onChange={changeText} editing={editorKey} />
           </div>
-          <SvgWrap cursor={cursor}>
-            <HexContext.Provider value={hexDispatch}>
-              <SvgBox
-                selectType={selectType}
-                hexes={hexState.hexes}
-                radius={radius}
-                width={700}
-                url={mapURL}
-                tool={selectedTool}
-                onHexEvent={handleHexEvent}
-                selectedHexes={selectedHexes}
-              />
-            </HexContext.Provider>
+          <SvgWrap cursor={cursor} onMouseLeave={() => changeMouseDown(false)}>
+            <SvgBox
+              selectType={selectType}
+              colors={colorLayer}
+              getTerrain={currentMap ? currentMap.getTerrainByIndex : false}
+              radius={radius}
+              width={700}
+              url={mapURL}
+              tool={selectedTool}
+              onHexEvent={handleHexEvent}
+              selectedHexes={selectedHexes}
+            />
           </SvgWrap>
         </Col>
 
         <Toolbar
           onClick={changeTool}
           changeCursor={changeCursor}
+          onTerrainChange={selectTerrain}
+          terrain={selectedTerrain}
           selected={selectedTool}
           color={color}
           onChangeColor={changeColor}
