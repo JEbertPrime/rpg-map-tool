@@ -33,7 +33,7 @@ export default function MapThumb({
         style={{
           width: `${width}px`,
           height: `${height}px`,
-          backgroundImage: `url(${map.fileName})`,
+          backgroundImage: `url(${map.file})`,
           backgroundSize: "cover",
         }}
       >

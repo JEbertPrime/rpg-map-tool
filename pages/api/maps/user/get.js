@@ -15,8 +15,12 @@ const handler = async (req, res) => {
           try {
             //Find single map by id
             const map = await Map.findById(mapId);
-            console.log(map);
-            return res.status(200).send(map);
+            if(map.user == user){
+              return res.status(200).send(map);
+            }else {
+              res.status(401).send("User id mismatch");
+            }
+            
           } catch (error) {
             return res.status(500).send(error.message);
           }
