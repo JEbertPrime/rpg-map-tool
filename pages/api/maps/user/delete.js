@@ -9,30 +9,24 @@ const handler = async (req, res) => {
     if(session){
         if (req.method === 'DELETE') {
             // Check if name, email or password is provided
-            const { mapId, user } = JSON.parse(req.body);
-            console.log(user)
-            if(user == session.user.id){
-            if (user) {
+            const { mapId } = JSON.parse(req.body);
                 try {
-                
                 //Find single map by id
-                Map.deleteOne({_id:mapId}, function (err){
-                    if(err){
-                    res.status(500).send(err.message)
-                    }else{
-                        return res.status(200).send('deleted');
-
-                    }
-                })
+                var map = Map.findById(mapId)
+                if(map.user == session.user._id){
+                    Map.deleteOne({_id:mapId}, function (err){
+                        if(err){
+                        res.status(500).send(err.message)
+                        }else{
+                            return res.status(200).send('deleted');
+    
+                        }
+                    })
+                }
+                
                 } catch (error) {
                 return res.status(500).send(error.message);
                 }
-            } else {
-                res.status(422).send('data_incomplete');
-            }
-        }else{
-            res.status(401).send('User id mismatch')
-        }
         } else {
             res.status(422).send('req_method_not_supported');
         }

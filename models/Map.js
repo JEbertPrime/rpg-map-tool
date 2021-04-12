@@ -1,6 +1,20 @@
 import mongoose from "mongoose";
 var Schema = mongoose.Schema;
 import {hex} from './Hex.js'
+var color = new Schema({
+    color: {type: String},
+    indices: [Number],
+    text: [{
+      key: String,
+      text: {type: Schema.Types.Mixed}
+    }],
+
+})
+color.add({children: [color]})
+var terrain = new Schema({
+  terrain: {type: String},
+  indices: [Number]
+})
 var map = new Schema({
   user: {
     type: Schema.Types.ObjectId,
@@ -14,13 +28,13 @@ var map = new Schema({
     type: String,
     required: true,
   },
+  
   hexRadius: {
     type: Number,
     required: true,
   },
-  hexes: {
-    type: [hex],
-  },
+  colors: [color],
+  terrains: [terrain],
   since: {
     type: Date,
     default: Date.now,

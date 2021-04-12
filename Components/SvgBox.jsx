@@ -11,7 +11,6 @@ export default function svgBox(props) {
   var w = parseInt(props.width);
   var [h, changeHeight] = useState((w * 2) / 3);
   var r =  props.radius < 10 ? 10 : props.radius > 40 ? 40 : props.radius
-  var hexes = [...props.hexes]
     
   var [zoomG, changeZoomG] = useState({})
   var [zoomBehavior, changeZoom] = useState()
@@ -48,7 +47,7 @@ export default function svgBox(props) {
       [w, h],
     ])
     .filter((event)=>{
-      return  !event.ctrlKey && !event.button && props.tool === 4 ||( event.type == 'wheel' && !event.ctrlKey && !event.button)
+      return  !event.ctrlKey && !event.button && props.tool === 'pan' ||( event.type == 'wheel' && !event.ctrlKey && !event.button)
     })
     zoomGroup.call(
         zoomCall
@@ -75,11 +74,11 @@ export default function svgBox(props) {
       }}
       viewBox={`0 0 ${w} ${h}`}
     >
+   
       <g id="zoom" data-testid='zoom'>
         <image
           href={props.url}
           width="100%"
-          preserveAspectRatio="true"
           onLoad={resizeToImage}
         />
         <clipPath id="map">
@@ -87,14 +86,16 @@ export default function svgBox(props) {
         </clipPath>
         <g clipPath="url(#map">
           {bin.map((hex, index) => {
-
+            var terrain = props.getTerrain ?  props.getTerrain(index) : false
           return(
             <MemoHex
               center={{ x: hex.x, y: hex.y }}
               radius={r}
+              index={index}
               selected={props.selectedHexes.includes(index)}
               byColor={props.selectType === 'color'}
-              hexData={hexes[index] ? hexes[index] : false}
+              color={props.colors? props.colors.getColorByIndex(index) : ''}
+              terrain={terrain }
               key={`hex_${Math.trunc(hex.x)}_${Math.trunc(hex.y)}`}
               onClick={(e)=>{
                 props.onHexEvent(e, index)
