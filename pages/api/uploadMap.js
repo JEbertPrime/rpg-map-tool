@@ -13,7 +13,7 @@ export default async (req, res) => {
     const form = new formidable.IncomingForm();
     form.uploadDir = "./public/maps/";
     form.on('fileBegin', (name, file)=>{
-      file.path = unique(form.uploadDir) +  file.name.split('.').pop();
+      file.path = unique(form.uploadDir) + '.' + file.name.split('.').pop();
 
     })
     form.keepExtensions = true;
