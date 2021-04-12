@@ -118,7 +118,7 @@ var [change, stateChange] = useState(false)
       })
         .then((response) => response.json())
         .then((obj) => {
-          console.log(radius);
+          
           let data = JSON.stringify({
             user: session.user.id,
             title: mapTitle,
@@ -132,7 +132,11 @@ var [change, stateChange] = useState(false)
             .then((response) => response.status)
             .then((status) => {
               if (status === 201) {
-                getMyMaps();
+                changeUserMaps(maps.map((map) => new HexMap(map)));
+                toggle(2)
+
+              }else{
+                return {error: 'map not created'}
               }
             });
 
