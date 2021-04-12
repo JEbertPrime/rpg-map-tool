@@ -8,6 +8,9 @@
     "start": "next start",
     "test": "jest --collect-coverage"
   },
+  "peerOptionalDependencies": {
+    "mongodb": "^3.6.0"
+  },
   "dependencies": {
     "-": "0.0.1",
     "@svgdotjs/svg.draggable.js": "^3.0.2",
