@@ -132,8 +132,9 @@ var [change, stateChange] = useState(false)
             .then((response) => response.status)
             .then((status) => {
               if (status === 201) {
-                changeUserMaps(maps.map((map) => new HexMap(map)));
-                toggle(2)
+                getMyMaps().then((maps)=>  changeUserMaps(maps.map((map) => new HexMap(map))))
+               
+                toggle('2')
 
               }else{
                 return {error: 'map not created'}
@@ -169,8 +170,17 @@ var [change, stateChange] = useState(false)
     }
     return maps;
   };
-  const deleteThisMap = (map) => {
-    map.delete();
+  const deleteThisMap = (map, index) => {
+   var deleted =  map.delete();
+   console.log(deleted)
+   if(deleted){
+     var mapsCopy = [...userMaps]
+      mapsCopy.splice(index, 1)
+    changeUserMaps(mapsCopy)
+    return true
+   }else{
+     return false
+   }
   };
   const updateMap = (map) => {
     try{map.update()}catch(err){console.log(err)}
@@ -435,7 +445,8 @@ var [change, stateChange] = useState(false)
                           <Button
                             id={userMap.id}
                             onClick={(e) => {
-                              deleteThisMap(userMap);
+                               deleteThisMap(userMap, index);
+                              
                             }}
                           >
                             Delete

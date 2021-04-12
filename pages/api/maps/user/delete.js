@@ -16,7 +16,7 @@ const handler = async (req, res) => {
                 if(map.user == session.user._id){
                     Map.deleteOne({_id:mapId}, function (err){
                         if(err){
-                        res.status(500).send(err.message)
+                        return res.status(500).send(err.message)
                         }else{
                             return res.status(200).send('deleted');
     

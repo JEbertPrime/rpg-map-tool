@@ -100,18 +100,19 @@ export default class HexMap {
     const data = JSON.stringify({
         mapId: this.id,
       });
-      fetch("api/maps/user/delete", {
+      var deleted = fetch("api/maps/user/delete", {
         method: "DELETE",
         body: data,
       })
         .then((response) => response.status)
         .then((status) => {
           if (status === 200) {
-            return 'deleted'
+            return true
           }else{
-              return 'error'
+              return false
           }
         });
+        return deleted
   }
 
 }
