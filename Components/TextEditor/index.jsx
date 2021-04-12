@@ -41,7 +41,7 @@ export default class TextEditor extends Component {
     this.onChange = (editorState) => {this.setState({ editorState })};
     this.saveText = props.onChange
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
-    console.log(props.text)
+    
   }
 
   handleCustomStyles = (style) =>{
@@ -80,6 +80,7 @@ export default class TextEditor extends Component {
     } , 2000)
   }
   componentDidUpdate(prevProps, prevState){
+
     if(prevProps.editing != this.props.editing){
       this.onChange(this.props.text)
       clearInterval(this.interval)
@@ -98,7 +99,7 @@ export default class TextEditor extends Component {
         <StyledDiv>
           <ToolBar
             onToggle={this.onToggle}
-            editorState={this.state.editorState}
+            editorState={this.props.editing == 0 ? false : this.state.editorState}
             changeColor={this.toggleColor}
           />
           <Editor

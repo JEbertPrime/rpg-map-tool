@@ -26,13 +26,15 @@ const Wrapper = styled.span`
         border-bottom: 1px solid lightgrey;
     `
 export const ToolBar = (props) => {
+  var currentStyle, currentContentBlock
     if(props.editorState){
+      var selectionState = props.editorState.getSelection();
+      var anchorKey = selectionState.getAnchorKey();
+      var currentContent = props.editorState.getCurrentContent();
+       currentContentBlock = currentContent.getBlockForKey(anchorKey);
+       currentStyle = props.editorState.getCurrentInlineStyle()
     }
-  var selectionState = props.editorState.getSelection();
-  var anchorKey = selectionState.getAnchorKey();
-  var currentContent = props.editorState.getCurrentContent();
-  var currentContentBlock = currentContent.getBlockForKey(anchorKey);
-  var currentStyle = props.editorState.getCurrentInlineStyle()
+ 
   var [color, changeColor] = useState('#000')
   const handleColorChange = (color) =>{
       props.changeColor(color)
@@ -43,9 +45,9 @@ export const ToolBar = (props) => {
       {toolbarItems.map((toolbarItem) => (
         <ToolbarButton
           key={toolbarItem.label}
-          active={
+          active={props.editorState ? 
             currentStyle.has(toolbarItem.style) ||
-            currentContentBlock.getType() == toolbarItem.style
+            currentContentBlock.getType() == toolbarItem.style : false
           }
           onToggle={props.onToggle}
           style={toolbarItem.style}

@@ -3,7 +3,11 @@ var Schema = mongoose.Schema;
 import {hex} from './Hex.js'
 var color = new Schema({
     color: {type: String},
-    indices: [Number]
+    indices: [Number],
+    text: [{
+      key: String,
+      text: {type: Schema.Types.Mixed}
+    }],
 
 })
 color.add({children: [color]})
@@ -24,10 +28,7 @@ var map = new Schema({
     type: String,
     required: true,
   },
-  text: [{
-    key: String,
-    text: {type: Schema.Types.Mixed}
-  }],
+  
   hexRadius: {
     type: Number,
     required: true,

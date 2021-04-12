@@ -11,11 +11,9 @@ export default class HexMap {
     this._title = this.mapData.title
     this._user = this.mapData.user
     this._fileName = this.mapData.fileName
-    this._text = this.mapData.text
     this.initial = {
         colors : this._colors.toJson(),
-        terrains: [...this._terrains],
-        text: [...this._text]
+        terrains: [...this._terrains]
 
     }
   }
@@ -44,9 +42,7 @@ export default class HexMap {
   set id(id){
       this._id = id
   }
-  get text(){
-      return this._text
-  }
+ 
   get file() {
       return this._fileName
   }
@@ -83,28 +79,11 @@ export default class HexMap {
     }
   }
   
-  changeText(rawState, k){
-    if(this._text.find(({key})=> k==key )){
-
-        this._text.find(({key})=>k==key).text = rawState
-    }else{
-
-        this._text.push({key:k, text:rawState})
-    }
-    return this._text
-  }
-  getTextByKey(k){
-    if(this._text.find(({key})=> k==key )){
-      return this._text.find(({key})=>k==key).text
-  }else{
-      return false
-  }
-  }
+  
   update(){
     var update = {}
     update.colors = equal(this.initial.colors, this.colors.toJson()) ? undefined : this.colors.toJson()
     update.terrains = equal(this.initial.terrains, this.terrains) ? undefined : this.terrains
-    update.text = equal(this.initial.text, this.text) ? undefined : this.text
     update.mapId = this.id
     fetch("api/maps/user/update", {
         method: "PUT",

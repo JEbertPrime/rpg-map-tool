@@ -77,7 +77,6 @@ export default function Map() {
   var [radius, changeRadius] = useState(10);
   var [terrains, changeTerrains] = useState();
   var [colorLayer, changeColorLayer] = useState();
-  var [texts, changeTexts] = useState();
   var [currentMap, changeCurrentMap] = useState();
   var [session] = useContext(SessionContext);
 
@@ -181,9 +180,9 @@ var [change, stateChange] = useState(false)
     changeRadius(selectedMap.radius);
   };
   const changeText = (text, key) => {
-    if (currentMap) {
-      currentMap.changeText(text, key)
-      changeTextState(currentMap.getTextByKey(key))
+    if (colorLayer) {
+      colorLayer.changeText(text, key)
+      changeTextState(EditorState.createWithContent(convertFromRaw(colorLayer.getTextByKey(key))))
 
     }
   };
@@ -196,6 +195,7 @@ var [change, stateChange] = useState(false)
     }
     if (selectedTool !== "text") {
       toggleEditor("none");
+      changeEditorKey('trash')
     }
     switch (selectedTool) {
       case "selectOne":
@@ -302,13 +302,12 @@ var [change, stateChange] = useState(false)
           break
       case "text":
         if (event.type == "click") {
-
          var key = event.getModifierState('Shift') ? colorLayer.getColorByIndex(index) : index ? index : 0
+         
           changeEditorKey(key)
           toggleEditor("block");
-          var raw = currentMap.getTextByKey(key)
-          raw ? raw.entityMap = {} : 
-          console.log(raw)
+          var raw = colorLayer.getTextByKey(key)
+          raw ? raw.entityMap = {} : false
           var content = raw ? convertFromRaw(raw) : false 
             changeTextState(content ? EditorState.createWithContent(content) : EditorState.createEmpty())
             changeEditorKey(key);
@@ -448,7 +447,7 @@ var [change, stateChange] = useState(false)
         </Col>
         <Col>
           <div style={{ display: editorDisplay }}>
-            <TextEditor text={text} onChange={changeText} editing={editorKey} />
+            <TextEditor text={text} onChange={changeText} editing={editorKey} change={true} />
           </div>
           <SvgWrap cursor={cursor} onMouseLeave={() => changeMouseDown(false)}>
             <SvgBox

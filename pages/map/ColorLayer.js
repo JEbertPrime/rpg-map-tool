@@ -1,8 +1,8 @@
 export default class ColorLayer {
-  constructor({ color, indices, children = [], parent  }) {
+  constructor({ color, indices,text = [], children = [], parent,   }) {
     this._color = color ? color : undefined;
     this._indices = indices ? [...indices] : [];
-    console.log(parent)
+    this._text = text
     this._parent = parent;
     var self = this
     this._children = makeChildren(children, self)
@@ -30,6 +30,9 @@ export default class ColorLayer {
   }
   get parent() {
     return this._parent;
+  }
+  get text(){
+    return this._text
   }
   get childIndices(){
     let indices = []
@@ -84,7 +87,23 @@ export default class ColorLayer {
     this._indices = indices;
     return this._indices;
   }
+  changeText(rawState, k){
+    if(this._text.find(({key})=> k==key )){
 
+        this._text.find(({key})=>k==key).text = rawState
+    }else{
+
+        this._text.push({key:k, text:rawState})
+    }
+    return this._text
+  }
+  getTextByKey(k){
+    if(this._text.find(({key})=> k==key )){
+      return this._text.find(({key})=>k==key).text
+  }else{
+      return false
+  }
+  }
   toJson() {
     let layer = {};
     layer.color = this.color;
