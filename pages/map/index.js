@@ -1,13 +1,11 @@
 import styled from "styled-components";
 import styles from "../../styles/Map.module.css";
 import SvgBox from "../../Components/SvgBox.jsx";
+import MapUpload from '../../Components/MapUpload'
 import HexMap from "../../Classes/HexMap";
-import { Editor, EditorState, convertFromRaw } from "draft-js";
+import { EditorState, convertFromRaw } from "draft-js";
 import {
-  Input,
   Label as unstyledLabel,
-  FormGroup,
-  Form,
   Col,
   Container,
   Row,
@@ -30,18 +28,10 @@ import {
   createContext,
   memo,
 } from "react";
-import { SessionContext, HexContext } from "../../contexts/contexts.js";
-import { dispatch } from "d3-dispatch";
+import { SessionContext } from "../../contexts/contexts.js";
 
 ////////////////STYLED COMPONENTS ///////////////////////////////
-const FileInputLabel = styled(unstyledLabel)`
-  width: 80%;
-  height: 80px;
-  border: 1px solid lightgrey;
-  border-radius: 0.25rem;
-  text-align: center;
-  padding-top: 25px;
-`;
+
 const Label = styled(unstyledLabel)`
   width: 80%;
 `;
@@ -98,59 +88,26 @@ var [change, stateChange] = useState(false)
   const toggle = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
   };
-
+  function generateUUID() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+       return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid; };
   const handleFile = (e) => {
-    changeMap(e.target.files[0]);
-    changeMapURL(window.URL.createObjectURL(e.target.files[0]));
+    var blob = e.target.files[0]
+    var type = blob.type
+    var uniqueName = 'map' + generateUUID() + '.' + type.split('/').pop()
+    var newFile = new File([blob], uniqueName, {type: type} )
+    
+    changeMap(newFile);
+    changeMapURL(window.URL.createObjectURL(newFile));
+    return newFile.name
   };
-  const parseFileName = (fileName) => {
-    var href = fileName.replace("public", "");
-    return href.replaceAll("\\", "/");
-  };
-  const submitMap = () => {
-    if (session) {
-      window.URL.revokeObjectURL(mapURL);
-      if (mapFile != {}) var data = new FormData();
-      data.append("map", mapFile, mapFile.name);
-      fetch("api/uploadMap", {
-        method: "POST",
-        body: data,
-      })
-        .then((response) => response.json())
-        .then((obj) => {
-          
-          let data = JSON.stringify({
-            user: session.user.id,
-            title: mapTitle,
-            hexRadius: radius,
-            fileName: parseFileName(obj.path),
-          });
-          fetch("api/maps/user/upload", {
-            method: "POST",
-            body: data,
-          })
-            .then((response) => response.status)
-            .then((status) => {
-              if (status === 201) {
-                getMyMaps().then((maps)=>  changeUserMaps(maps.map((map) => new HexMap(map))))
-               
-                toggle('2')
 
-              }else{
-                return {error: 'map not created'}
-              }
-            });
-
-          changeMapURL(parseFileName(obj.path));
-        });
-    } else {
-      if (loading) {
-        console.log(loading);
-      } else {
-        console.log("not logged in");
-      }
-    }
-  };
+  
   const getMyMaps = () => {
     var maps = [];
     if (session) {
@@ -172,7 +129,6 @@ var [change, stateChange] = useState(false)
   };
   const deleteThisMap = (map, index) => {
    var deleted =  map.delete();
-   console.log(deleted)
    if(deleted){
      var mapsCopy = [...userMaps]
       mapsCopy.splice(index, 1)
@@ -200,7 +156,12 @@ var [change, stateChange] = useState(false)
 
     }
   };
-  
+  const handleSubmitMap = (path) =>{
+    if(path){
+      changeMapURL(path)
+      getMyMaps.then((maps)=> changeUserMaps(maps.map((map) => new HexMap(map))))
+    }
+  }
   const handleHexEvent = (event, index) => {
     if (event.type == "mousedown") {
       changeMouseDown(true);
@@ -382,51 +343,7 @@ var [change, stateChange] = useState(false)
               </Nav>
               <TabContent activeTab={activeTab}>
                 <TabPane tabId="1">
-                  <Form>
-                    <Label>
-                      Hex Radius
-                      <Input
-                        type="number"
-                        step={0.1}
-                        value={radius}
-                        onChange={(e) => {
-                          changeRadius(+e.target.value);
-                        }}
-                        max={40}
-                        min={10}
-                      />
-                      <Input
-                        value={radius}
-                        type="range"
-                        onChange={(e) => changeRadius(+e.target.value)}
-                        step={1}
-                        max={40}
-                        min={10}
-                      />
-                    </Label>
-                    <FormGroup>
-                      <Label>
-                        Map Title
-                        <Input
-                          type="text"
-                          onChange={(e) => changeMapTitle(e.target.value)}
-                          value={mapTitle}
-                        />
-                      </Label>
-                    </FormGroup>
-
-                    <FileInputLabel>
-                      <Input
-                        type="file"
-                        onChange={handleFile}
-                        style={{ display: "none" }}
-                      />
-                      <strong>Drag</strong> map or select file
-                    </FileInputLabel>
-                    <FormGroup>
-                      <Button onClick={submitMap}>Submit</Button>
-                    </FormGroup>
-                  </Form>
+                  <MapUpload onRadius={changeRadius} onFile={handleFile} onTitle={changeMapTitle} onSubmitMap={handleSubmitMap} radius={radius} mapTitle={mapTitle} file={mapFile} />
                 </TabPane>
                 <TabPane tabId="2">
                   <MapWrap cursor={cursor}>

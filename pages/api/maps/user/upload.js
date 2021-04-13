@@ -1,20 +1,26 @@
 import connectDB from "../../../../middleware/mongodb.js";
 import Map from "../../../../models/Map.js";
 import { getSession } from "next-auth/client";
+import aws from 'aws-sdk';
 
 const handler = async (req, res) => {
   const session = await getSession({ req });
   if (session) {
     if (req.method === "POST") {
+     
       // Check if name, email or password is provided
       const { title, fileName, user, hexRadius } = JSON.parse(req.body);
-      console.log(title,fileName,user,hexRadius)
+      
       if (title && fileName && user) {
-        try {
+        try {         
+
+          var fullURL = 'https://d1vi9ejcwd4ely.cloudfront.net/' + fileName
+
+
           var map = new Map({
             user,
             title,
-            fileName,
+            fileName:fullURL,
             hexRadius
           });
           // Create new map
