@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import Link from 'next/link'
 const Child = styled.div`
   display: none;
   align-items: center;
@@ -22,6 +23,7 @@ export default function MapThumb({
   onClick,
   id,
   map,
+  publicMap,
   ...props
 }) {
   var content = (
@@ -29,6 +31,7 @@ export default function MapThumb({
       <MapTitle>{map.title}</MapTitle>
       <Parent
         id={id}
+        
         onClick={onClick}
         style={{
           width: `${width}px`,
@@ -41,6 +44,8 @@ export default function MapThumb({
       </Parent>
     </Wrapper>
   );
-
-  return content;
+  var linkedContent = <Link href={'map?map_id=' + map._id + (publicMap ? '&isPublic=true': '') }>
+    {content}
+  </Link>
+  return props.linked ? linkedContent : content;
 }

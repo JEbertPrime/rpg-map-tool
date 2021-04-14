@@ -46,12 +46,12 @@ const cursors = [
   ["arrows-move", "12 12"],
 ];
 const icons = [
-  { icon: BsCursor, tool: "selectOne" },
-  { icon: BsCursorFill, tool: "selectColor" },
-  { icon: BsBrush, tool: "brush" },
-  {icon: BiEraser, tool:'erase'},
-  { icon: BsCursorText, tool: "text" },
-  { icon: BsArrowsMove, tool: "pan" },
+  { icon: BsCursor, tool: "selectOne", title:'Click to select a hex. Shift to select multiple' },
+  { icon: BsCursorFill, tool: "selectColor", title: 'Click to select a color group' },
+  { icon: BsBrush, tool: "brush", title:'Choose a color, and click + drag to paint' },
+  {icon: BiEraser, tool:'erase', title: 'Erase colors from a hex'},
+  { icon: BsCursorText, tool: "text", title: 'View and edit text. Click for a single hex, shift click for a color group' },
+  { icon: BsArrowsMove, tool: "pan", title: 'Click and drag to pan' },
 ];
 
 export const IconWrapper = styled.div``;
@@ -68,7 +68,7 @@ export const StyledMainIcons = icons.map((icon) => {
     height: 32px;
     width: 32px;
   `;
-  return { icon: styledIcon, tool: icon.tool };
+  return { icon: styledIcon, tool: icon.tool, title:icon.title };
 });
 const TerrainIcons = [
   { icon: GiForest, terrain: "forest", tool:'terrain' },
@@ -115,7 +115,7 @@ export default function Toolbar(props) {
       {StyledMainIcons.map((icon, index) => {
         let Icon = icon.icon;
         return (
-          <IconWrapper>
+          <IconWrapper title={icon.title}>
             <Icon
               selected={icon.tool === props.selected}
               onClick={() => {

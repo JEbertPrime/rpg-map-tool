@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import Providers from "next-auth/providers";
 import Adapters from "next-auth/adapters";
 
-import Models from "../../../models";
 export default NextAuth({
   // Configure one or more authentication providers
   providers: [
@@ -21,13 +20,7 @@ export default NextAuth({
   ],
   adapter: Adapters.TypeORM.Adapter(
     // The first argument should be a database connection string or TypeORM config object
-    process.env.DATABASE_URL,
-    // The second argument can be used to pass custom models and schemas
-    {
-      models: {
-        User: Models.User,
-      },
-    }
+    process.env.DATABASE_URL
   ),
   callbacks: {
     // async signIn(user, account, profile) { return true },

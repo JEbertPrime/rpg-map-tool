@@ -57,7 +57,7 @@ const SiteNav = (props) => {
 
   return (
     <div>
-      <Navbar color="white" light expand="md" id='main_nav' style={{borderBottom: '1px solid lightgrey', marginBottom: '5px'}}>
+      <Navbar color="white" light expand="md" id='main_nav' style={{borderBottom: '1px solid lightgrey'}}>
         <Link href="/">
           <NavbarBrand href="/">campaignMaps</NavbarBrand>
         </Link>

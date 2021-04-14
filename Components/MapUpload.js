@@ -38,6 +38,7 @@ export default function MapUpload ({onFile, onRadius, onTitle, mapTitle, radius,
         }
       };
       const uploadMap = async () =>{
+        
           if(session){
           var imageName = await uploadPhoto()
         var map = {
@@ -52,10 +53,10 @@ export default function MapUpload ({onFile, onRadius, onTitle, mapTitle, radius,
                 method: 'POST',
                 body: JSON.stringify(map)
             })
-            console.log(created)
+            return onSubmitMap(created.status == 201  ? imageName : false)
           }
         }else{
-            console.log('no login!')
+           return false
         }
       }
     

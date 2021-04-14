@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useContext, useEffect, useState } from "react";
-
+import HexMap from '../Classes/HexMap'
 import SvgBox from "../Components/SvgBox.jsx";
 import styled from 'styled-components'
 
@@ -31,11 +31,11 @@ const devMaps = [{title: 'Example 1', fileName: 'maps/example_1.jpg', _id:1}, {t
 
 export default function Home(props) {
   const [session, error] = props.session ? props.session : useContext(SessionContext)
-  console.log(session)
   const [userMaps, changeUserMaps] = useState([])
+  const [publicMaps, changePublicMaps] = useState([])
 
 
-  const getMyMaps = () => {
+  const getMyMaps = async () => {
     var error = null, maps = []
     if (session) {
       
@@ -58,10 +58,20 @@ export default function Home(props) {
     }
     return maps
   };
+  const getPublicMaps = async () => {
+    var maps = []
+    maps = fetch('api/maps/public', {
+      method: 'GET'
+    })
+    .then(data=> data.json())
+    return maps
+  }
+  
   useEffect(async ()=>{
     var maps = await getMyMaps()
-    if(error){console.error(error)}
-    changeUserMaps(maps)
+    var pMaps = await getPublicMaps()
+    changeUserMaps(maps.map(map=>new HexMap(map)))
+    changePublicMaps(pMaps.map(map=> new HexMap(map)))
     
   }, [session])
   return (
@@ -71,10 +81,10 @@ export default function Home(props) {
     <Row>
     <Col md={2} lg={3}/>
       <StyledCol md={8} lg={6}>
-        <MapShowcase maps={devMaps}>
+        <MapShowcase maps={publicMaps} linked publicMap>
           <h1>Public Maps</h1>
         </MapShowcase>
-        <MapShowcase maps={userMaps}>
+        <MapShowcase maps={userMaps} linked={true}>
           <h1>My Maps</h1>
         </MapShowcase>
       </StyledCol>

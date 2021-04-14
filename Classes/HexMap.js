@@ -3,7 +3,6 @@ import equal from 'deep-equal'
 export default class HexMap {
   constructor(mapData) {
     this.mapData = { ...mapData };
-    console.log(this.mapData)
     this._id = this.mapData._id
     this._colors = mapData.colors[0] ? new ColorLayer(mapData.colors[0]) : new ColorLayer({color: undefined, indices: []})
     this._terrains = this.mapData.terrains ? this.mapData.terrains : []

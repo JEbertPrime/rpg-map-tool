@@ -1,8 +1,10 @@
 import styled from "styled-components";
 import styles from "../../styles/Map.module.css";
 import SvgBox from "../../Components/SvgBox.jsx";
-import MapUpload from '../../Components/MapUpload'
+import MapUpload from "../../Components/MapUpload";
 import HexMap from "../../Classes/HexMap";
+import generateUUID from '../../utils/uuid'
+import { useRouter } from 'next/router'
 import { EditorState, convertFromRaw } from "draft-js";
 import {
   Label as unstyledLabel,
@@ -32,9 +34,14 @@ import { SessionContext } from "../../contexts/contexts.js";
 
 ////////////////STYLED COMPONENTS ///////////////////////////////
 
-const Label = styled(unstyledLabel)`
-  width: 80%;
-`;
+const PanelToggle = styled.button`
+  background-color:white;
+  border: none;
+  border-left: 1px solid lightgrey;
+  &:hover{
+    background-color: lightgrey;
+  }
+`
 const MapWrap = styled.div`
   display: flex;
   flex-direction: column;
@@ -59,10 +66,15 @@ const SvgWrap = styled.div`
 
 ///////////////////////////////////CONTEXTS/////////////////////////////////////////////
 export default function Map() {
+  /////////////////////Router stuff ///////////////////
+  const router = useRouter()
+  const { map_id, isPublic } = router.query
+  var [publicMap, changePublicMap] = useState(isPublic)
   /////////////////////MAP STATE //////////////////////
   var [mapFile, changeMap] = useState({});
   var [mapURL, changeMapURL] = useState("");
   var [userMaps, changeUserMaps] = useState([]);
+  var [mapsLoaded, changeMapsLoaded] = useState(false)
   var [mapTitle, changeMapTitle] = useState("");
   var [radius, changeRadius] = useState(10);
   var [terrains, changeTerrains] = useState();
@@ -72,10 +84,11 @@ export default function Map() {
 
   //////////////////////////UI STATE///////////////////
   var [activeTab, setActiveTab] = useState("1");
+  var [sideOpen, setSideOpen] = useState(true)
   var [selectedTool, changeTool] = useState("0");
   var [cursor, changeCursor] = useState(null);
   var [color, changeColor] = useState("#fff");
-  var [selectedColor, setSelectColor] = useState(false)
+  var [selectedColor, setSelectColor] = useState(false);
   var [selectedHexes, selectHex] = useState([]);
   var [selectType, changeSelectType] = useState("single");
   var [mouseDown, changeMouseDown] = useState(false);
@@ -83,31 +96,24 @@ export default function Map() {
   var [editorKey, changeEditorKey] = useState();
   var [text, changeTextState] = useState(EditorState.createEmpty());
   var [selectedTerrain, selectTerrain] = useState("desert");
-var [change, stateChange] = useState(false)
-  
+  var [change, stateChange] = useState(false);
+
   const toggle = (tab) => {
     if (activeTab !== tab) setActiveTab(tab);
   };
-  function generateUUID() {
-    var d = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = (d + Math.random()*16)%16 | 0;
-        d = Math.floor(d/16);
-       return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-    });
-    return uuid; };
+  const toggleSidePanel = () => setSideOpen(!sideOpen)
+ 
   const handleFile = (e) => {
-    var blob = e.target.files[0]
-    var type = blob.type
-    var uniqueName = 'map' + generateUUID() + '.' + type.split('/').pop()
-    var newFile = new File([blob], uniqueName, {type: type} )
-    
+    var blob = e.target.files[0];
+    var type = blob.type;
+    var uniqueName = "map" + generateUUID() + "." + type.split("/").pop();
+    var newFile = new File([blob], uniqueName, { type: type });
+
     changeMap(newFile);
     changeMapURL(window.URL.createObjectURL(newFile));
-    return newFile.name
+    return newFile.name;
   };
 
-  
   const getMyMaps = () => {
     var maps = [];
     if (session) {
@@ -128,40 +134,68 @@ var [change, stateChange] = useState(false)
     return maps;
   };
   const deleteThisMap = (map, index) => {
-   var deleted =  map.delete();
-   if(deleted){
-     var mapsCopy = [...userMaps]
-      mapsCopy.splice(index, 1)
-    changeUserMaps(mapsCopy)
-    return true
-   }else{
-     return false
-   }
+    var deleted = map.delete();
+    if (deleted) {
+      var mapsCopy = [...userMaps];
+      mapsCopy.splice(index, 1);
+      changeUserMaps(mapsCopy);
+      return true;
+    } else {
+      return false;
+    }
   };
   const updateMap = (map) => {
-    try{map.update()}catch(err){console.log(err)}
+    try {
+      map.update();
+    } catch (err) {
+      console.log(err);
+    }
   };
   const displayMap = (id) => {
-    var selectedMap = userMaps.find((userMap) => userMap._id === id)
-    changeCurrentMap(selectedMap, console.log(currentMap));
+    changePublicMap(false)
+    var selectedMap = userMaps.find((userMap) => userMap._id === id);
+    if(selectedMap){
+      changeCurrentMap(selectedMap);
     changeTerrains(selectedMap.terrains);
-    changeColorLayer(selectedMap.colors, ()=>console.log(colorLayer));
+    changeColorLayer(selectedMap.colors);
     changeMapURL(selectedMap.file);
     changeRadius(selectedMap.radius);
-  };
-  const changeText = (text, key) => {
-    if (colorLayer) {
-      colorLayer.changeText(text, key)
-      changeTextState(EditorState.createWithContent(convertFromRaw(colorLayer.getTextByKey(key))))
-
     }
+    
   };
-  const handleSubmitMap = (path) =>{
-    if(path){
-      changeMapURL(path)
-      getMyMaps.then((maps)=> changeUserMaps(maps.map((map) => new HexMap(map))))
+  const displayPublicMap = async (id) => {
+    var publicMapData = await fetch('api/maps/public/' + id,{
+      method: 'GET'
+    }).then(data=>data.json())
+    var selectedMap = new HexMap(publicMapData[0])
+    console.log(selectedMap)
+    if(selectedMap){
+      changeCurrentMap(selectedMap);
+    changeTerrains(selectedMap.terrains);
+    changeColorLayer(selectedMap.colors);
+    changeMapURL(selectedMap.file);
+    changeRadius(selectedMap.radius);
     }
   }
+  const changeText = (text, key) => {
+    if (colorLayer) {
+      colorLayer.changeText(text, key);
+      changeTextState(
+        EditorState.createWithContent(
+          convertFromRaw(colorLayer.getTextByKey(key))
+        )
+      );
+    }
+  };
+  const handleSubmitMap = (path) => {
+    if (path) {
+      console.log(path)
+       getMyMaps().then((maps) =>
+        changeUserMaps(maps.map((map) => new HexMap(map)))
+      );
+      toggle("2")
+    }
+  };
   const handleHexEvent = (event, index) => {
     if (event.type == "mousedown") {
       changeMouseDown(true);
@@ -170,7 +204,7 @@ var [change, stateChange] = useState(false)
     }
     if (selectedTool !== "text") {
       toggleEditor("none");
-      changeEditorKey('trash')
+      changeEditorKey("trash");
     }
     switch (selectedTool) {
       case "selectOne":
@@ -206,29 +240,26 @@ var [change, stateChange] = useState(false)
       case "selectColor":
         //select by color
         if (event.type === "click") {
-          var indices = []
-          var selectColor = colorLayer.getColorByIndex(index)
-          if(selectColor){
+          var indices = [];
+          var selectColor = colorLayer.getColorByIndex(index);
+          if (selectColor) {
+            indices = colorLayer.getColorLayer(selectColor).indices;
+            setSelectColor(selectColor);
+            changeColorLayer(colorLayer.getColorLayer(selectColor));
+            changeSelectType("color");
+          } else if (colorLayer.parent) {
+            indices = colorLayer.parent.indices;
 
-             indices = colorLayer.getColorLayer(selectColor).indices
-             setSelectColor(selectColor)
-             changeColorLayer(colorLayer.getColorLayer(selectColor))
-             changeSelectType('color')
-          }else if(colorLayer.parent){
-            indices = colorLayer.parent.indices
-            
-            changeColorLayer(colorLayer.parent)
-            
-            changeSelectType('color')
-            if(!colorLayer.parent.parent){
-              changeSelectType('single', console.log(selectType))
+            changeColorLayer(colorLayer.parent);
 
+            changeSelectType("color");
+            if (!colorLayer.parent.parent) {
+              changeSelectType("single", console.log(selectType));
             }
-            setSelectColor(false)
-
-          }else{
-            indices = [...colorLayer.childIndices]
-            changeSelectType('single')
+            setSelectColor(false);
+          } else {
+            indices = [...colorLayer.childIndices];
+            changeSelectType("single");
           }
 
           selectHex(indices);
@@ -246,46 +277,51 @@ var [change, stateChange] = useState(false)
               colorLayer.getColorByIndex(index)
             ) {
               colorLayer.changeChildColor(index, color);
-              stateChange(!change)
+              stateChange(!change);
             }
             if (colorLayer.getColorLayer(color)) {
               colorLayer.getColorLayer(color).addIndex(index);
-              stateChange(!change)
-
+              stateChange(!change);
             } else {
               colorLayer.addColor(color).addIndex(index);
-              stateChange(!change)
-
+              stateChange(!change);
             }
           }
         }
         break;
-        case 'erase':
-          if (mouseDown || event.type == "click") {
-            if (
-              (selectedHexes.length && selectedHexes.includes(index)) ||
-              !selectedHexes.length
-            ) {
-              if (
-                colorLayer.getColorByIndex(index)
-              ) {
-                colorLayer.getColorLayer(colorLayer.getColorByIndex(index)).removeIndex(index);
-              }
-             
+      case "erase":
+        if (mouseDown || event.type == "click") {
+          if (
+            (selectedHexes.length && selectedHexes.includes(index)) ||
+            !selectedHexes.length
+          ) {
+            if (colorLayer.getColorByIndex(index)) {
+              colorLayer
+                .getColorLayer(colorLayer.getColorByIndex(index))
+                .removeIndex(index);
             }
           }
-          break
+        }
+        break;
       case "text":
         if (event.type == "click") {
-         var key = event.getModifierState('Shift') ? colorLayer.getColorByIndex(index) : index ? index : 0
-         
-          changeEditorKey(key)
+          var key = event.getModifierState("Shift")
+            ? colorLayer.getColorByIndex(index)
+            : index
+            ? index
+            : 0;
+
+          changeEditorKey(key);
           toggleEditor("block");
-          var raw = colorLayer.getTextByKey(key)
-          raw ? raw.entityMap = {} : false
-          var content = raw ? convertFromRaw(raw) : false 
-            changeTextState(content ? EditorState.createWithContent(content) : EditorState.createEmpty())
-            changeEditorKey(key);
+          var raw = colorLayer.getTextByKey(key);
+          raw ? (raw.entityMap = {}) : false;
+          var content = raw ? convertFromRaw(raw) : false;
+          changeTextState(
+            content
+              ? EditorState.createWithContent(content)
+              : EditorState.createEmpty()
+          );
+          changeEditorKey(key);
         }
         break;
       case "terrain":
@@ -308,16 +344,28 @@ var [change, stateChange] = useState(false)
   useEffect(async () => {
     var maps = await getMyMaps();
     changeUserMaps(maps.map((map) => new HexMap(map)));
+    changeMapsLoaded(true)
+
   }, [session, userMaps.length]);
+
+  useEffect( ()=>{
+    if(map_id && mapsLoaded){
+      toggleSidePanel(false)
+
+      publicMap =='true'? displayPublicMap(map_id) : displayMap(map_id)
+    }
+  }, [map_id, mapsLoaded])
   useEffect(() => {
-   var interval = setInterval(()=>updateMap(currentMap), 10000)
-   return ()=>clearInterval(interval)
+    if(publicMap!= 'true'){
+    var interval = setInterval(() => updateMap(currentMap), 10000);
+    return () => clearInterval(interval);
+    }
   }, [currentMap]);
   return (
-    <Container fluid>
+    <Container fluid style={{paddingLeft: '0px'}}>
       <Row noGutters>
-        <Col md={3} lg={2}>
-          <Row>
+        <Col md={3} lg={2} style={{display: sideOpen ? 'block': 'none', paddingLeft: '15px'}}>
+          <Row styled={{marginRight: '0px', marginLeft: '15px'}}>
             <Col>
               <Nav tabs>
                 <NavItem>
@@ -343,7 +391,15 @@ var [change, stateChange] = useState(false)
               </Nav>
               <TabContent activeTab={activeTab}>
                 <TabPane tabId="1">
-                  <MapUpload onRadius={changeRadius} onFile={handleFile} onTitle={changeMapTitle} onSubmitMap={handleSubmitMap} radius={radius} mapTitle={mapTitle} file={mapFile} />
+                  <MapUpload
+                    onRadius={changeRadius}
+                    onFile={handleFile}
+                    onTitle={changeMapTitle}
+                    onSubmitMap={handleSubmitMap}
+                    radius={radius}
+                    mapTitle={mapTitle}
+                    file={mapFile}
+                  />
                 </TabPane>
                 <TabPane tabId="2">
                   <MapWrap cursor={cursor}>
@@ -362,8 +418,7 @@ var [change, stateChange] = useState(false)
                           <Button
                             id={userMap.id}
                             onClick={(e) => {
-                               deleteThisMap(userMap, index);
-                              
+                              deleteThisMap(userMap, index);
                             }}
                           >
                             Delete
@@ -377,9 +432,15 @@ var [change, stateChange] = useState(false)
             </Col>
           </Row>
         </Col>
+        <PanelToggle onClick={toggleSidePanel}> {sideOpen ? '<<' : '>>'} </PanelToggle>
         <Col>
           <div style={{ display: editorDisplay }}>
-            <TextEditor text={text} onChange={changeText} editing={editorKey} change={true} />
+            <TextEditor
+              text={text}
+              onChange={changeText}
+              editing={editorKey}
+              change={true}
+            />
           </div>
           <SvgWrap cursor={cursor} onMouseLeave={() => changeMouseDown(false)}>
             <SvgBox
