@@ -103,6 +103,7 @@ export default function svgBox(props) {
               onMouseMove={(e)=>{
                 props.onHexEvent(e, index)
               }}
+              onMouseEnter={(e)=>{props.onHexEvent(e, index)}}
               onMouseUp={(e)=>{
                 props.onHexEvent(e, index)
               }}

@@ -208,7 +208,7 @@ export default function Map() {
     }
     switch (selectedTool) {
       case "selectOne":
-        if (event.type == "click") {
+        if (event.type == "click" ) {
           changeSelectType("single");
 
           if (event.getModifierState("Shift")) {
@@ -230,7 +230,7 @@ export default function Map() {
           event.getModifierState("Shift") === true &&
           mouseDown &&
           !selectedHexes[index] &&
-          event.type !== "click"
+         ( event.type == "mousedown" || event.type == 'mouseenter')
         ) {
           var selectCopy = [...selectedHexes];
           selectCopy.push(index);
@@ -267,7 +267,8 @@ export default function Map() {
 
         break;
       case "brush":
-        if (mouseDown || event.type == "click") {
+        if (mouseDown && event.type =='mouseenter' || event.type == "click" || event.type == 'mousedown') {
+          console.log( event.type)
           if (
             (selectedHexes.length && selectedHexes.includes(index)) ||
             !selectedHexes.length
