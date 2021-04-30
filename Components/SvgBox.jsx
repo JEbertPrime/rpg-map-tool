@@ -70,7 +70,7 @@ export default function svgBox(props) {
       id="map-svg"
       width="100%"
       style={{
-        maxHeight: "80vh",
+        maxHeight: "90vh",
       }}
       viewBox={`0 0 ${w} ${h}`}
     >
@@ -103,6 +103,7 @@ export default function svgBox(props) {
               onMouseMove={(e)=>{
                 props.onHexEvent(e, index)
               }}
+              onMouseEnter={(e)=>{props.onHexEvent(e, index)}}
               onMouseUp={(e)=>{
                 props.onHexEvent(e, index)
               }}
