@@ -1,5 +1,5 @@
 export default class ColorLayer {
-  constructor({ color, indices,text = [], children = [], parent,   }) {
+  constructor({ color, indices, text = [], children = [], parent,   }) {
     this._color = color ? color : undefined;
     this._indices = indices ? [...indices] : [];
     this._text = text
@@ -92,7 +92,6 @@ export default class ColorLayer {
 
         this._text.find(({key})=>k==key).text = rawState
     }else{
-
         this._text.push({key:k, text:rawState})
     }
     return this._text
@@ -108,8 +107,10 @@ export default class ColorLayer {
     let layer = {};
     layer.color = this.color;
     layer.indices = this.indices;
+    layer.text = this.text
     let children = this.children.map((child) => child.toJson());
     layer.children = children;
+    
     return layer;
   }
 }

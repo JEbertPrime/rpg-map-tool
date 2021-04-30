@@ -1,7 +1,6 @@
 import connectDB from "../../../../middleware/mongodb.js";
 import Map from "../../../../models/Map.js";
 import { getSession } from "next-auth/client";
-import aws from 'aws-sdk';
 
 const handler = async (req, res) => {
   const session = await getSession({ req });
@@ -10,6 +9,8 @@ const handler = async (req, res) => {
      
       // Check if name, email or password is provided
       const { title, fileName, user, hexRadius } = JSON.parse(req.body);
+
+
       
       if (title && fileName && user) {
         try {         

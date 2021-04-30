@@ -81,8 +81,8 @@ export default class HexMap {
   
   update(){
     var update = {}
-    update.colors = equal(this.initial.colors, this.colors.toJson()) ? undefined : this.colors.toJson()
-    update.terrains = equal(this.initial.terrains, this.terrains) ? undefined : this.terrains
+    update.colors = this.colors.toJson()
+    update.terrains = this.terrains
     update.mapId = this.id
     fetch("api/maps/user/update", {
         method: "PUT",
